@@ -77,23 +77,16 @@ button {
 
 const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
 
-const assets = [
-  {
-    name: "Hat Press",
-    details: "Machine only. Hats & patches not included.",
-    guide: "https://your-hat-press-guide-link"
-  },
-  {
-    name: "Button Bar",
-    details: "Machine only. Supplies separate.",
-    guide: "https://your-button-bar-guide-link"
-  },
-  {
-    name: "360 Photo Booth",
-    details: "Operator not included.",
-    guide: "https://your-360-guide-link"
-  }
-];
+let assets = [];
+
+async function loadAssets() {
+  const response = await fetch(`${https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec}?action=getAssets`);
+  assets = await response.json();
+  renderAssets();
+}
+
+window.onload = loadAssets;
+
 
 const assetsContainer = document.getElementById("assetsContainer");
 
