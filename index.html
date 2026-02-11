@@ -75,7 +75,7 @@ body {
 }
 
 /* =========================
-   FORM SECTIONS
+   FORM
 ========================= */
 
 .section {
@@ -98,10 +98,6 @@ input:focus, textarea:focus {
   border-color: #ed1c24;
 }
 
-/* =========================
-   NOTICE BOX
-========================= */
-
 .notice {
   background-color: #fff5f5;
   border-left: 6px solid #ed1c24;
@@ -110,10 +106,6 @@ input:focus, textarea:focus {
   text-align: center;
   font-size: 14px;
 }
-
-/* =========================
-   ASSET CARDS
-========================= */
 
 .asset {
   border: 1px solid #ddd;
@@ -131,10 +123,6 @@ input:focus, textarea:focus {
 .asset.disabled {
   opacity: 0.4;
 }
-
-/* =========================
-   BUTTON
-========================= */
 
 button {
   padding: 14px 28px;
@@ -156,10 +144,6 @@ button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }
-
-/* =========================
-   LOADING + CONFIRMATION
-========================= */
 
 #loading {
   display: none;
@@ -245,7 +229,7 @@ const assetsContainer = document.getElementById("assetsContainer");
 const loadingDiv = document.getElementById("loading");
 const submitBtn = document.getElementById("submitBtn");
 
-/* ================= LOAD ASSETS ================= */
+/* LOAD ASSETS */
 
 async function loadAssets() {
   loadingDiv.style.display = "block";
@@ -265,7 +249,7 @@ async function loadAssets() {
 
 window.onload = loadAssets;
 
-/* ================= RENDER ASSETS ================= */
+/* RENDER ASSETS */
 
 function renderAssets(unavailable = []) {
   assetsContainer.innerHTML = "";
@@ -291,7 +275,7 @@ function renderAssets(unavailable = []) {
   });
 }
 
-/* ================= DATE AVAILABILITY ================= */
+/* CHECK AVAILABILITY */
 
 document.getElementById("startDate").addEventListener("change", checkAvailability);
 document.getElementById("endDate").addEventListener("change", checkAvailability);
@@ -308,7 +292,7 @@ async function checkAvailability() {
   renderAssets(unavailable);
 }
 
-/* ================= SUBMIT ================= */
+/* SUBMIT */
 
 async function submitBooking() {
 
@@ -343,26 +327,17 @@ async function submitBooking() {
       body: JSON.stringify(data)
     });
 
-    const result = await response.json();
+    const text = await response.text();
 
-    if (result.error) return resetButton(result.error);
+    if (text !== "OK") {
+      return resetButton("Submission failed.");
+    }
 
     document.getElementById("formSection").style.display = "none";
     document.getElementById("confirmation").style.display = "block";
 
-    const guideDiv = document.getElementById("guideLinks");
-    guideDiv.innerHTML = "";
-
-    selectedAssets.forEach(assetName => {
-      const asset = assets.find(a => a.name === assetName);
-      if (asset && asset.guide) {
-        guideDiv.innerHTML +=
-          `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
-      }
-    });
-
   } catch (err) {
-    resetButton("Submission failed. Please try again.");
+    resetButton("Submission failed.");
   }
 }
 
@@ -372,11 +347,6 @@ function resetButton(message) {
   submitBtn.textContent = "Submit Request";
   if (message) alert(message);
 }
-
-</script>
-
-</body>
-</html>
 
 </script>
 
