@@ -3,7 +3,6 @@
 <head>
 <meta charset="UTF-8">
 <title>Asset Booking Form</title>
-
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -12,10 +11,6 @@ body {
   padding: 20px;
 }
 
-h1 { margin-bottom: 20px; }
-
-.section { margin-bottom: 25px; }
-
 .notice {
   background-color: #f8f8f8;
   border-left: 4px solid #333;
@@ -23,6 +18,10 @@ h1 { margin-bottom: 20px; }
   border-radius: 6px;
   font-size: 14px;
 }
+
+h1 { margin-bottom: 10px; }
+
+.section { margin-bottom: 25px; }
 
 .asset {
   border: 1px solid #ddd;
@@ -41,7 +40,20 @@ button {
   cursor: pointer;
 }
 
-#confirmation { display: none; }
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+#confirmation {
+  display: none;
+}
+
+#loading {
+  display: none;
+  margin-bottom: 10px;
+  font-style: italic;
+}
 </style>
 </head>
 <body>
@@ -51,60 +63,79 @@ button {
 <div id="formSection">
 
 <div class="section">
-<input type="text" id="name" placeholder="Name" required><br><br>
-<input type="email" id="email" placeholder="Email" required><br><br>
-<input type="text" id="eventName" placeholder="Event Name"><br><br>
-<textarea id="notes" placeholder="Notes"></textarea>
+  <input type="text" id="name" placeholder="Name" required><br><br>
+  <input type="email" id="email" placeholder="Email" required><br><br>
+  <input type="text" id="eventName" placeholder="Event Name"><br><br>
+  <textarea id="notes" placeholder="Notes"></textarea>
 </div>
 
 <div class="section">
-<label>Start Date:</label>
-<input type="date" id="startDate"><br><br>
-<label>End Date:</label>
-<input type="date" id="endDate">
+  <label>Start Date:</label>
+  <input type="date" id="startDate">
+  <br><br>
+  <label>End Date:</label>
+  <input type="date" id="endDate">
 </div>
 
 <div class="section notice">
-<strong>Staffing Notice:</strong><br>
-Assets do not come with staffing. If you need to request staffing for an event, please email
-<a href="mailto:eleanor.mason@dbbrewingcompany.com">
-eleanor.mason@dbbrewingcompany.com
-</a>
-with event details and number of staff requested.
+  <strong>Staffing Notice:</strong><br>
+  Assets do not come with staffing. If you need to request staffing for an event, please email 
+  <a href="mailto:eleanor.mason@dbbrewingcompany.com">eleanor.mason@dbbrewingcompany.com</a> 
+  with event details and number of staff requested.
 </div>
 
 <div class="section">
-<h3>Select Assets</h3>
-<div id="assetsContainer"></div>
+  <h3>Select Assets</h3>
+  <div id="loading">Loading assets...</div>
+  <div id="assetsContainer"></div>
 </div>
 
-<button onclick="submitBooking()">Submit Request</button>
+<button id="submitBtn" onclick="submitBooking()" disabled>Submit Request</button>
 
 </div>
 
 <div id="confirmation">
-<h2>Request Submitted</h2>
-<div id="guideLinks"></div>
-<p>If you have questions, contact: eleanor.mason@dbbrewingcompany.com</p>
+  <h2>Request Submitted</h2>
+  <div id="guideLinks"></div>
+  <p>If you have questions, contact: eleanor.mason@dbbrewingcompany.com</p>
 </div>
 
 <script>
-
 const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
 
 let assets = [];
 
+const assetsContainer = document.getElementById("assetsContainer");
+const loadingDiv = document.getElementById("loading");
+const submitBtn = document.getElementById("submitBtn");
+
+// ------------------------
+// Load Assets
+// ------------------------
 async function loadAssets() {
-  const response = await fetch(API_URL + "?action=getAssets");
-  assets = await response.json();
-  renderAssets();
+  loadingDiv.style.display = "block";
+  submitBtn.disabled = true;
+
+  try {
+    const response = await fetch(`${API_URL}?action=getAssets`);
+    assets = await response.json();
+    renderAssets();
+  } catch (err) {
+    console.error("Error loading assets:", err);
+    alert("Failed to load assets. Please refresh the page.");
+  } finally {
+    loadingDiv.style.display = "none";
+    submitBtn.disabled = false;
+  }
 }
 
 window.onload = loadAssets;
 
+// ------------------------
+// Render Assets
+// ------------------------
 function renderAssets(unavailable = []) {
-  const container = document.getElementById("assetsContainer");
-  container.innerHTML = "";
+  assetsContainer.innerHTML = ""; // clear container
 
   assets.forEach(asset => {
     const div = document.createElement("div");
@@ -116,17 +147,19 @@ function renderAssets(unavailable = []) {
 
     div.innerHTML = `
       <label>
-        <input type="checkbox" value="${asset.name}"
-        ${unavailable.includes(asset.name) ? "disabled" : ""}>
+        <input type="checkbox" value="${asset.name}" ${unavailable.includes(asset.name) ? "disabled" : ""}>
         <strong>${asset.name}</strong>
       </label>
       <div>${asset.details}</div>
     `;
 
-    container.appendChild(div);
+    assetsContainer.appendChild(div);
   });
 }
 
+// ------------------------
+// Check Availability on Date Change
+// ------------------------
 document.getElementById("startDate").addEventListener("change", checkAvailability);
 document.getElementById("endDate").addEventListener("change", checkAvailability);
 
@@ -136,63 +169,87 @@ async function checkAvailability() {
 
   if (!start || !end) return;
 
-  const response = await fetch(
-    API_URL + "?action=checkAvailability&start=" + start + "&end=" + end
-  );
-
+  const response = await fetch(`${API_URL}?action=checkAvailability&start=${start}&end=${end}`);
   const unavailable = await response.json();
+
   renderAssets(unavailable);
 }
 
+// ------------------------
+// Submit Booking
+// ------------------------
 async function submitBooking() {
+  const name = document.getElementById("name").value.trim();
+  const email = document.getElementById("email").value.trim();
+  const eventName = document.getElementById("eventName").value.trim();
+  const notes = document.getElementById("notes").value.trim();
+  const startDate = document.getElementById("startDate").value;
+  const endDate = document.getElementById("endDate").value;
 
   const selectedAssets = Array.from(
     document.querySelectorAll("input[type=checkbox]:checked")
   ).map(cb => cb.value);
+
+  // ------------------------
+  // Frontend Validation
+  // ------------------------
+  if (!name || !email) {
+    alert("Please enter your name and email.");
+    return;
+  }
+
+  if (!startDate || !endDate) {
+    alert("Please select both start and end dates.");
+    return;
+  }
+
+  if (new Date(endDate) < new Date(startDate)) {
+    alert("End date cannot be before start date.");
+    return;
+  }
 
   if (selectedAssets.length === 0) {
     alert("Please select at least one asset.");
     return;
   }
 
-  const data = {
-    name: document.getElementById("name").value,
-    email: document.getElementById("email").value,
-    eventName: document.getElementById("eventName").value,
-    notes: document.getElementById("notes").value,
-    startDate: document.getElementById("startDate").value,
-    endDate: document.getElementById("endDate").value,
-    assets: selectedAssets
-  };
+  const data = { name, email, eventName, notes, startDate, endDate, assets: selectedAssets };
 
-  const response = await fetch(API_URL, {
-    method: "POST",
-    body: JSON.stringify(data)
-  });
+  try {
+    const response = await fetch(API_URL, {
+      method: "POST",
+      body: JSON.stringify(data)
+    });
 
-  const result = await response.json();
+    const result = await response.json();
 
-  if (result.error) {
-    alert(result.error);
-    return;
-  }
-
-  document.getElementById("formSection").style.display = "none";
-  document.getElementById("confirmation").style.display = "block";
-
-  const guideDiv = document.getElementById("guideLinks");
-  guideDiv.innerHTML = "";
-
-  selectedAssets.forEach(assetName => {
-    const asset = assets.find(a => a.name === assetName);
-    if (asset && asset.guide) {
-      guideDiv.innerHTML +=
-        `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
+    if (result.error) {
+      alert(result.error);
+      return;
     }
-  });
+
+    // ------------------------
+    // Show Confirmation
+    // ------------------------
+    document.getElementById("formSection").style.display = "none";
+    document.getElementById("confirmation").style.display = "block";
+
+    const guideDiv = document.getElementById("guideLinks");
+    guideDiv.innerHTML = "";
+
+    selectedAssets.forEach(assetName => {
+      const asset = assets.find(a => a.name === assetName);
+      if (asset && asset.guide) {
+        guideDiv.innerHTML +=
+          `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
+      }
+    });
+
+  } catch (err) {
+    alert("Error submitting request. Please try again.");
+    console.error(err);
+  }
 }
-
 </script>
-
 </body>
 </html>
