@@ -3,41 +3,154 @@
 <head>
 <meta charset="UTF-8">
 <title>Asset Booking Form</title>
+
 <style>
-body {
-  font-family: Arial, sans-serif;
-  max-width: 800px;
-  margin: 40px auto;
-  padding: 20px;
+
+/* =========================
+   CUSTOM BRAND FONTS
+========================= */
+
+@font-face {
+  font-family: 'BasecampSans';
+  src: url('BasecampSans.otf') format('opentype');
 }
 
-.notice {
-  background-color: #f8f8f8;
-  border-left: 4px solid #333;
+@font-face {
+  font-family: 'GloryCulture';
+  src: url('GloryCulture.ttf') format('truetype');
+}
+
+@font-face {
+  font-family: 'Lumberjack';
+  src: url('Lumberjack.ttf') format('truetype');
+}
+
+/* =========================
+   GLOBAL STYLES
+========================= */
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #f5f5f5;
+  color: #231f20;
+  font-family: 'Lumberjack', sans-serif;
+}
+
+.wrapper {
+  max-width: 850px;
+  margin: 50px auto;
+  background: white;
+  padding: 45px;
+  border-radius: 14px;
+  box-shadow: 0 12px 35px rgba(0,0,0,0.08);
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+  text-align: center;
+  margin-bottom: 35px;
+}
+
+.header img {
+  max-height: 110px;
+  margin-bottom: 15px;
+}
+
+.header h1 {
+  font-family: 'BasecampSans', sans-serif;
+  font-size: 30px;
+  margin: 0;
+  letter-spacing: 1px;
+  color: #231f20;
+}
+
+.subheader {
+  font-family: 'GloryCulture', sans-serif;
+  font-size: 18px;
+  margin-top: 6px;
+  color: #ed1c24;
+}
+
+/* =========================
+   FORM SECTIONS
+========================= */
+
+.section {
+  margin-bottom: 25px;
+}
+
+input, textarea {
+  width: 100%;
   padding: 12px;
-  border-radius: 6px;
+  margin-bottom: 12px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  font-family: 'Lumberjack', sans-serif;
+  transition: border 0.2s ease;
+}
+
+input:focus, textarea:focus {
+  outline: none;
+  border-color: #ed1c24;
+}
+
+/* =========================
+   NOTICE BOX
+========================= */
+
+.notice {
+  background-color: #fff5f5;
+  border-left: 6px solid #ed1c24;
+  padding: 18px;
+  border-radius: 10px;
+  text-align: center;
   font-size: 14px;
 }
 
-h1 { margin-bottom: 10px; }
-
-.section { margin-bottom: 25px; }
+/* =========================
+   ASSET CARDS
+========================= */
 
 .asset {
   border: 1px solid #ddd;
-  padding: 10px;
-  margin-bottom: 10px;
-  border-radius: 6px;
+  padding: 18px;
+  margin-bottom: 15px;
+  border-radius: 12px;
+  transition: 0.2s ease;
+}
+
+.asset:hover {
+  border-color: #ed1c24;
+  box-shadow: 0 6px 14px rgba(237,28,36,0.15);
 }
 
 .asset.disabled {
   opacity: 0.4;
 }
 
+/* =========================
+   BUTTON
+========================= */
+
 button {
-  padding: 10px 20px;
-  font-size: 16px;
+  padding: 14px 28px;
+  font-size: 15px;
+  border-radius: 10px;
+  border: none;
+  background-color: #ed1c24;
+  color: white;
+  font-family: 'BasecampSans', sans-serif;
   cursor: pointer;
+  transition: 0.2s ease;
+}
+
+button:hover {
+  background-color: #c5161c;
 }
 
 button:disabled {
@@ -45,62 +158,85 @@ button:disabled {
   cursor: not-allowed;
 }
 
-#confirmation {
-  display: none;
-}
+/* =========================
+   LOADING + CONFIRMATION
+========================= */
 
 #loading {
   display: none;
-  margin-bottom: 10px;
+  text-align: center;
+  margin-bottom: 12px;
   font-style: italic;
 }
+
+#confirmation {
+  display: none;
+  text-align: center;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>Asset Request Form</h1>
+<div class="wrapper">
 
-<div id="formSection">
+  <div class="header">
+    <img src="DBShield.png" alt="DB Brewing Logo">
+    <h1>ASSET BOOKING REQUEST</h1>
+    <div class="subheader">Internal & External Event Use</div>
+  </div>
 
-<div class="section">
-  <input type="text" id="name" placeholder="Name" required><br><br>
-  <input type="email" id="email" placeholder="Email" required><br><br>
-  <input type="text" id="eventName" placeholder="Event Name"><br><br>
-  <textarea id="notes" placeholder="Notes"></textarea>
-</div>
+  <div id="formSection">
 
-<div class="section">
-  <label>Start Date:</label>
-  <input type="date" id="startDate">
-  <br><br>
-  <label>End Date:</label>
-  <input type="date" id="endDate">
-</div>
+    <div class="section">
+      <input type="text" id="name" placeholder="Full Name" required>
+      <input type="email" id="email" placeholder="Email Address" required>
+      <input type="text" id="eventName" placeholder="Event Name">
+      <textarea id="notes" placeholder="Additional Notes"></textarea>
+    </div>
 
-<div class="section notice">
-  <strong>Staffing Notice:</strong><br>
-  Assets do not come with staffing. If you need to request staffing for an event, please email 
-  <a href="mailto:eleanor.mason@dbbrewingcompany.com">eleanor.mason@dbbrewingcompany.com</a> 
-  with event details and number of staff requested.
-</div>
+    <div class="section">
+      <label><strong>Start Date</strong></label>
+      <input type="date" id="startDate">
+      <label><strong>End Date</strong></label>
+      <input type="date" id="endDate">
+    </div>
 
-<div class="section">
-  <h3>Select Assets</h3>
-  <div id="loading">Loading assets...</div>
-  <div id="assetsContainer"></div>
-</div>
+    <div class="section notice">
+      <strong>Staffing Notice:</strong><br>
+      Assets do not come with staffing. If you need staffing support,
+      please email 
+      <a href="mailto:eleanor.mason@dbbrewingcompany.com">
+      eleanor.mason@dbbrewingcompany.com</a>
+      with event details and number of staff requested.
+    </div>
 
-<button id="submitBtn" onclick="submitBooking()" disabled>Submit Request</button>
+    <div class="section">
+      <h3 style="text-align:center;">Select Assets</h3>
+      <div id="loading">Loading assets...</div>
+      <div id="assetsContainer"></div>
+    </div>
 
-</div>
+    <div style="text-align:center;">
+      <button id="submitBtn" onclick="submitBooking()" disabled>
+        Submit Request
+      </button>
+    </div>
 
-<div id="confirmation">
-  <h2>Request Submitted</h2>
-  <div id="guideLinks"></div>
-  <p>If you have questions, contact: eleanor.mason@dbbrewingcompany.com</p>
+  </div>
+
+  <div id="confirmation">
+    <h2>Request Submitted</h2>
+    <p>Your booking has been received.</p>
+    <div id="guideLinks"></div>
+    <p>Questions? Contact eleanor.mason@dbbrewingcompany.com</p>
+  </div>
+
 </div>
 
 <script>
+
 const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
 
 let assets = [];
@@ -109,9 +245,6 @@ const assetsContainer = document.getElementById("assetsContainer");
 const loadingDiv = document.getElementById("loading");
 const submitBtn = document.getElementById("submitBtn");
 
-// ------------------------
-// Load Assets
-// ------------------------
 async function loadAssets() {
   loadingDiv.style.display = "block";
   submitBtn.disabled = true;
@@ -121,8 +254,7 @@ async function loadAssets() {
     assets = await response.json();
     renderAssets();
   } catch (err) {
-    console.error("Error loading assets:", err);
-    alert("Failed to load assets. Please refresh the page.");
+    alert("Failed to load assets.");
   } finally {
     loadingDiv.style.display = "none";
     submitBtn.disabled = false;
@@ -131,11 +263,8 @@ async function loadAssets() {
 
 window.onload = loadAssets;
 
-// ------------------------
-// Render Assets
-// ------------------------
 function renderAssets(unavailable = []) {
-  assetsContainer.innerHTML = ""; // clear container
+  assetsContainer.innerHTML = "";
 
   assets.forEach(asset => {
     const div = document.createElement("div");
@@ -147,7 +276,8 @@ function renderAssets(unavailable = []) {
 
     div.innerHTML = `
       <label>
-        <input type="checkbox" value="${asset.name}" ${unavailable.includes(asset.name) ? "disabled" : ""}>
+        <input type="checkbox" value="${asset.name}"
+        ${unavailable.includes(asset.name) ? "disabled" : ""}>
         <strong>${asset.name}</strong>
       </label>
       <div>${asset.details}</div>
@@ -157,27 +287,21 @@ function renderAssets(unavailable = []) {
   });
 }
 
-// ------------------------
-// Check Availability on Date Change
-// ------------------------
 document.getElementById("startDate").addEventListener("change", checkAvailability);
 document.getElementById("endDate").addEventListener("change", checkAvailability);
 
 async function checkAvailability() {
   const start = document.getElementById("startDate").value;
   const end = document.getElementById("endDate").value;
-
   if (!start || !end) return;
 
-  const response = await fetch(`${API_URL}?action=checkAvailability&start=${start}&end=${end}`);
+  const response = await fetch(
+    `${API_URL}?action=checkAvailability&start=${start}&end=${end}`
+  );
   const unavailable = await response.json();
-
   renderAssets(unavailable);
 }
 
-// ------------------------
-// Submit Booking
-// ------------------------
 async function submitBooking() {
   const name = document.getElementById("name").value.trim();
   const email = document.getElementById("email").value.trim();
@@ -190,66 +314,39 @@ async function submitBooking() {
     document.querySelectorAll("input[type=checkbox]:checked")
   ).map(cb => cb.value);
 
-  // ------------------------
-  // Frontend Validation
-  // ------------------------
-  if (!name || !email) {
-    alert("Please enter your name and email.");
-    return;
-  }
-
-  if (!startDate || !endDate) {
-    alert("Please select both start and end dates.");
-    return;
-  }
-
-  if (new Date(endDate) < new Date(startDate)) {
-    alert("End date cannot be before start date.");
-    return;
-  }
-
-  if (selectedAssets.length === 0) {
-    alert("Please select at least one asset.");
-    return;
-  }
+  if (!name || !email) return alert("Please enter your name and email.");
+  if (!startDate || !endDate) return alert("Select start and end dates.");
+  if (new Date(endDate) < new Date(startDate))
+    return alert("End date cannot be before start date.");
+  if (selectedAssets.length === 0)
+    return alert("Select at least one asset.");
 
   const data = { name, email, eventName, notes, startDate, endDate, assets: selectedAssets };
 
-  try {
-    const response = await fetch(API_URL, {
-      method: "POST",
-      body: JSON.stringify(data)
-    });
+  const response = await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
 
-    const result = await response.json();
+  const result = await response.json();
+  if (result.error) return alert(result.error);
 
-    if (result.error) {
-      alert(result.error);
-      return;
+  document.getElementById("formSection").style.display = "none";
+  document.getElementById("confirmation").style.display = "block";
+
+  const guideDiv = document.getElementById("guideLinks");
+  guideDiv.innerHTML = "";
+
+  selectedAssets.forEach(assetName => {
+    const asset = assets.find(a => a.name === assetName);
+    if (asset && asset.guide) {
+      guideDiv.innerHTML +=
+        `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
     }
-
-    // ------------------------
-    // Show Confirmation
-    // ------------------------
-    document.getElementById("formSection").style.display = "none";
-    document.getElementById("confirmation").style.display = "block";
-
-    const guideDiv = document.getElementById("guideLinks");
-    guideDiv.innerHTML = "";
-
-    selectedAssets.forEach(assetName => {
-      const asset = assets.find(a => a.name === assetName);
-      if (asset && asset.guide) {
-        guideDiv.innerHTML +=
-          `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
-      }
-    });
-
-  } catch (err) {
-    alert("Error submitting request. Please try again.");
-    console.error(err);
-  }
+  });
 }
+
 </script>
+
 </body>
 </html>
