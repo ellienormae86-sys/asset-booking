@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Asset Booking Form</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  max-width: 800px;
+  margin: 40px auto;
+  padding: 20px;
+}
+
+h1 { margin-bottom: 10px; }
+
+.section { margin-bottom: 25px; }
+
+.asset {
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+}
+
+.asset.disabled {
+  opacity: 0.4;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  cursor: pointer;
+}
+
+#confirmation {
+  display: none;
+}
+</style>
+</head>
+<body>
+
+<h1>Asset Request Form</h1>
+
+<div id="formSection">
+
+<div class="section">
+<input type="text" id="name" placeholder="Name" required><br><br>
+<input type="email" id="email" placeholder="Email" required><br><br>
+<input type="text" id="eventName" placeholder="Event Name"><br><br>
+<textarea id="notes" placeholder="Notes"></textarea>
+</div>
+
+<div class="section">
+<label>Start Date:</label>
+<input type="date" id="startDate">
+<br><br>
+<label>End Date:</label>
+<input type="date" id="endDate">
+</div>
+
+<div class="section">
+<h3>Select Assets</h3>
+<div id="assetsContainer"></div>
+</div>
+
+<button onclick="submitBooking()">Submit Request</button>
+
+</div>
+
+<div id="confirmation">
+<h2>Request Submitted</h2>
+<div id="guideLinks"></div>
+<p>If you have questions, contact: your@email.com</p>
+</div>
+
+<script>
+
+const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
+
+const assets = [
+  {
+    name: "Hat Press",
+    details: "Machine only. Hats & patches not included.",
+    guide: "https://your-hat-press-guide-link"
+  },
+  {
+    name: "Button Bar",
+    details: "Machine only. Supplies separate.",
+    guide: "https://your-button-bar-guide-link"
+  },
+  {
+    name: "360 Photo Booth",
+    details: "Operator not included.",
+    guide: "https://your-360-guide-link"
+  }
+];
+
+const assetsContainer = document.getElementById("assetsContainer");
+
+function renderAssets(unavailable = []) {
+  assetsContainer.innerHTML = "";
+
+  assets.forEach(asset => {
+    const div = document.createElement("div");
+    div.className = "asset";
+
+    if (unavailable.includes(asset.name)) {
+      div.classList.add("disabled");
+    }
+
+    div.innerHTML = `
+      <label>
+        <input type="checkbox" value="${asset.name}" ${unavailable.includes(asset.name) ? "disabled" : ""}>
+        <strong>${asset.name}</strong>
+      </label>
+      <div>${asset.details}</div>
+    `;
+
+    assetsContainer.appendChild(div);
+  });
+}
+
+renderAssets();
+
+document.getElementById("startDate").addEventListener("change", checkAvailability);
+document.getElementById("endDate").addEventListener("change", checkAvailability);
+
+async function checkAvailability() {
+  const start = document.getElementById("startDate").value;
+  const end = document.getElementById("endDate").value;
+
+  if (!start || !end) return;
+
+  const response = await fetch(`${API_URL}?action=checkAvailability&start=${start}&end=${end}`);
+  const unavailable = await response.json();
+
+  renderAssets(unavailable);
+}
+
+async function submitBooking() {
+  const selectedAssets = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
+    .map(cb => cb.value);
+
+  if (selectedAssets.length === 0) {
+    alert("Please select at least one asset.");
+    return;
+  }
+
+  const data = {
+    name: document.getElementById("name").value,
+    email: document.getElementById("email").value,
+    eventName: document.getElementById("eventName").value,
+    notes: document.getElementById("notes").value,
+    startDate: document.getElementById("startDate").value,
+    endDate: document.getElementById("endDate").value,
+    assets: selectedAssets
+  };
+
+  await fetch(API_URL, {
+    method: "POST",
+    body: JSON.stringify(data)
+  });
+
+  document.getElementById("formSection").style.display = "none";
+  document.getElementById("confirmation").style.display = "block";
+
+  const guideDiv = document.getElementById("guideLinks");
+  guideDiv.innerHTML = "";
+
+  selectedAssets.forEach(assetName => {
+    const asset = assets.find(a => a.name === assetName);
+    if (asset) {
+      guideDiv.innerHTML += `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
+    }
+  });
+}
+
+</script>
+</body>
+</html>
