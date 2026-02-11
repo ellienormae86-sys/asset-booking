@@ -65,7 +65,6 @@ body {
   font-size: 30px;
   margin: 0;
   letter-spacing: 1px;
-  color: #231f20;
 }
 
 .subheader {
@@ -204,7 +203,7 @@ button:disabled {
     </div>
 
     <div class="section notice">
-      <strong>Staffing Notice:</strong><br>
+      <strong>Notice:</strong><br>
       Assets do not come with staffing. If you need staffing support,
       please email 
       <a href="mailto:eleanor.mason@dbbrewingcompany.com">
@@ -240,10 +239,13 @@ button:disabled {
 const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
 
 let assets = [];
+let isSubmitting = false;
 
 const assetsContainer = document.getElementById("assetsContainer");
 const loadingDiv = document.getElementById("loading");
 const submitBtn = document.getElementById("submitBtn");
+
+/* ================= LOAD ASSETS ================= */
 
 async function loadAssets() {
   loadingDiv.style.display = "block";
@@ -262,6 +264,8 @@ async function loadAssets() {
 }
 
 window.onload = loadAssets;
+
+/* ================= RENDER ASSETS ================= */
 
 function renderAssets(unavailable = []) {
   assetsContainer.innerHTML = "";
@@ -287,6 +291,8 @@ function renderAssets(unavailable = []) {
   });
 }
 
+/* ================= DATE AVAILABILITY ================= */
+
 document.getElementById("startDate").addEventListener("change", checkAvailability);
 document.getElementById("endDate").addEventListener("change", checkAvailability);
 
@@ -302,11 +308,11 @@ async function checkAvailability() {
   renderAssets(unavailable);
 }
 
-let isSubmitting = false;
+/* ================= SUBMIT ================= */
 
 async function submitBooking() {
 
-  if (isSubmitting) return; // prevent double click
+  if (isSubmitting) return;
   isSubmitting = true;
   submitBtn.disabled = true;
   submitBtn.textContent = "Submitting...";
@@ -322,26 +328,12 @@ async function submitBooking() {
     document.querySelectorAll("input[type=checkbox]:checked")
   ).map(cb => cb.value);
 
-  // ---------- Frontend Validation ----------
-  if (!name || !email) {
-    resetButton();
-    return alert("Please enter your name and email.");
-  }
-
-  if (!startDate || !endDate) {
-    resetButton();
-    return alert("Select start and end dates.");
-  }
-
-  if (new Date(endDate) < new Date(startDate)) {
-    resetButton();
-    return alert("End date cannot be before start date.");
-  }
-
-  if (selectedAssets.length === 0) {
-    resetButton();
-    return alert("Select at least one asset.");
-  }
+  if (!name || !email) return resetButton("Please enter your name and email.");
+  if (!startDate || !endDate) return resetButton("Select start and end dates.");
+  if (new Date(endDate) < new Date(startDate))
+    return resetButton("End date cannot be before start date.");
+  if (selectedAssets.length === 0)
+    return resetButton("Select at least one asset.");
 
   const data = { name, email, eventName, notes, startDate, endDate, assets: selectedAssets };
 
@@ -353,12 +345,8 @@ async function submitBooking() {
 
     const result = await response.json();
 
-    if (result.error) {
-      resetButton();
-      return alert(result.error);
-    }
+    if (result.error) return resetButton(result.error);
 
-    // ---------- Show Confirmation ----------
     document.getElementById("formSection").style.display = "none";
     document.getElementById("confirmation").style.display = "block";
 
@@ -374,35 +362,21 @@ async function submitBooking() {
     });
 
   } catch (err) {
-    console.error(err);
-    alert("Submission failed. Please try again.");
-    resetButton();
+    resetButton("Submission failed. Please try again.");
   }
 }
 
-function resetButton() {
+function resetButton(message) {
   isSubmitting = false;
   submitBtn.disabled = false;
   submitBtn.textContent = "Submit Request";
-});
-
-  const result = await response.json();
-  if (result.error) return alert(result.error);
-
-  document.getElementById("formSection").style.display = "none";
-  document.getElementById("confirmation").style.display = "block";
-
-  const guideDiv = document.getElementById("guideLinks");
-  guideDiv.innerHTML = "";
-
-  selectedAssets.forEach(assetName => {
-    const asset = assets.find(a => a.name === assetName);
-    if (asset && asset.guide) {
-      guideDiv.innerHTML +=
-        `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
-    }
-  });
+  if (message) alert(message);
 }
+
+</script>
+
+</body>
+</html>
 
 </script>
 
