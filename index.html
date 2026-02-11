@@ -97,7 +97,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN
 let assets = [];
 
 async function loadAssets() {
-  const response = await fetch(`${https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec}?action=getAssets`);
+  const response = await fetch(`${API_URL}?action=getAssets`);
   assets = await response.json();
   renderAssets();
 }
