@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <title>Asset Booking Form</title>
+
 <style>
 body {
   font-family: Arial, sans-serif;
@@ -10,7 +11,11 @@ body {
   margin: 40px auto;
   padding: 20px;
 }
-  
+
+h1 { margin-bottom: 20px; }
+
+.section { margin-bottom: 25px; }
+
 .notice {
   background-color: #f8f8f8;
   border-left: 4px solid #333;
@@ -18,10 +23,6 @@ body {
   border-radius: 6px;
   font-size: 14px;
 }
-  
-h1 { margin-bottom: 10px; }
-
-.section { margin-bottom: 25px; }
 
 .asset {
   border: 1px solid #ddd;
@@ -40,9 +41,7 @@ button {
   cursor: pointer;
 }
 
-#confirmation {
-  display: none;
-}
+#confirmation { display: none; }
 </style>
 </head>
 <body>
@@ -60,19 +59,18 @@ button {
 
 <div class="section">
 <label>Start Date:</label>
-<input type="date" id="startDate">
-<br><br>
+<input type="date" id="startDate"><br><br>
 <label>End Date:</label>
 <input type="date" id="endDate">
 </div>
 
 <div class="section notice">
-  <strong>Staffing Notice:</strong><br>
-  Assets do not come with staffing. If you need to request staffing for an event, please email 
-  <a href="mailto:eleanor.mason@dbbrewingcompany.com">
-    eleanor.mason@dbbrewingcompany.com
-  </a> 
-  with event details and number of staff requested.
+<strong>Staffing Notice:</strong><br>
+Assets do not come with staffing. If you need to request staffing for an event, please email
+<a href="mailto:eleanor.mason@dbbrewingcompany.com">
+eleanor.mason@dbbrewingcompany.com
+</a>
+with event details and number of staff requested.
 </div>
 
 <div class="section">
@@ -87,28 +85,26 @@ button {
 <div id="confirmation">
 <h2>Request Submitted</h2>
 <div id="guideLinks"></div>
-<p>If you have questions, contact: your@email.com</p>
+<p>If you have questions, contact: eleanor.mason@dbbrewingcompany.com</p>
 </div>
 
 <script>
 
-const API_URL = "https://script.google.com/macros/s/AKfycbzcgJrFWLGD3Gt2X4lNndwN4IEMU7vZNlMaPBuYtSwwqkd2pCBA4NIUxUgCbalZsL11tg/exec";
+const API_URL = "PASTE_YOUR_NEW_WEB_APP_URL_HERE";
 
 let assets = [];
 
 async function loadAssets() {
-  const response = await fetch(`${API_URL}?action=getAssets`);
+  const response = await fetch(API_URL + "?action=getAssets");
   assets = await response.json();
   renderAssets();
 }
 
 window.onload = loadAssets;
 
-
-const assetsContainer = document.getElementById("assetsContainer");
-
 function renderAssets(unavailable = []) {
-  assetsContainer.innerHTML = "";
+  const container = document.getElementById("assetsContainer");
+  container.innerHTML = "";
 
   assets.forEach(asset => {
     const div = document.createElement("div");
@@ -120,17 +116,16 @@ function renderAssets(unavailable = []) {
 
     div.innerHTML = `
       <label>
-        <input type="checkbox" value="${asset.name}" ${unavailable.includes(asset.name) ? "disabled" : ""}>
+        <input type="checkbox" value="${asset.name}"
+        ${unavailable.includes(asset.name) ? "disabled" : ""}>
         <strong>${asset.name}</strong>
       </label>
       <div>${asset.details}</div>
     `;
 
-    assetsContainer.appendChild(div);
+    container.appendChild(div);
   });
 }
-
-renderAssets();
 
 document.getElementById("startDate").addEventListener("change", checkAvailability);
 document.getElementById("endDate").addEventListener("change", checkAvailability);
@@ -141,15 +136,19 @@ async function checkAvailability() {
 
   if (!start || !end) return;
 
-  const response = await fetch(`${API_URL}?action=checkAvailability&start=${start}&end=${end}`);
-  const unavailable = await response.json();
+  const response = await fetch(
+    API_URL + "?action=checkAvailability&start=" + start + "&end=" + end
+  );
 
+  const unavailable = await response.json();
   renderAssets(unavailable);
 }
 
 async function submitBooking() {
-  const selectedAssets = Array.from(document.querySelectorAll("input[type=checkbox]:checked"))
-    .map(cb => cb.value);
+
+  const selectedAssets = Array.from(
+    document.querySelectorAll("input[type=checkbox]:checked")
+  ).map(cb => cb.value);
 
   if (selectedAssets.length === 0) {
     alert("Please select at least one asset.");
@@ -166,10 +165,17 @@ async function submitBooking() {
     assets: selectedAssets
   };
 
-  await fetch(API_URL, {
+  const response = await fetch(API_URL, {
     method: "POST",
     body: JSON.stringify(data)
   });
+
+  const result = await response.json();
+
+  if (result.error) {
+    alert(result.error);
+    return;
+  }
 
   document.getElementById("formSection").style.display = "none";
   document.getElementById("confirmation").style.display = "block";
@@ -179,12 +185,14 @@ async function submitBooking() {
 
   selectedAssets.forEach(assetName => {
     const asset = assets.find(a => a.name === assetName);
-    if (asset) {
-      guideDiv.innerHTML += `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
+    if (asset && asset.guide) {
+      guideDiv.innerHTML +=
+        `<p><a href="${asset.guide}" target="_blank">${asset.name} Guide</a></p>`;
     }
   });
 }
 
 </script>
+
 </body>
 </html>
